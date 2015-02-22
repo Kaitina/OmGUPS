@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">OmGUPS</string>
+    <string name="action_settings">Settings</string>
+
+    <string-array name="views_array">
+        <item>Обновить</item>
+        <item>Расписание списком</item>
+        <item>Расписание календарем</item>
+        <item>Настройки</item>
+        <item>Авторизация</item>
+    </string-array>
+
+    <string name="menu">Меню</string>
+    <string name="teachers">Преподаватели</string>
+    <string name="groups">Группы</string>
+
+    <string-array name="settings_array">
+        <item>Отображаемые расписания</item>
+        <item>Еще пункты</item>
+        <item>Синхронизация</item>
+        <item>Отображение</item>
+    </string-array>
+    <string-array name="clickBox">
+        <item>При каждом запуске</item>
+        <item>Ежедневно</item>
+        <item>Каждое воскресенье</item>
+        <item>Каждый первый день месяца</item>
+        <item>Только 25 августа</item>
+        <item>Только вручную</item>
+    </string-array>
+    <string-array name="days">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+    </string-array>
+
+    <string name="uri">http://178.74.102.58:1342/android/</string>
+
+</resources>

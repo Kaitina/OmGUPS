@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/ds_today"
+        android:showAsAction="ifRoom|withText"
+        android:title="Сегодня">
+    </item>
+    <item
+        android:id="@+id/ds_navigation_1"
+        android:showAsAction="ifRoom|withText"
+        android:title="Нечетная">
+    </item>
+    <item
+        android:id="@+id/ds_navigation_2"
+        android:showAsAction="ifRoom|withText"
+        android:title="Четная">
+    </item>
+
+</menu>

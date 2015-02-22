@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Поиск"
+        android:actionViewClass="android.support.v7.widget.SearchView"
+        android:showAsAction="always">
+    </item>
+    
+    <item
+        android:id="@+id/help"
+        android:showAsAction="ifRoom|withText"
+        android:title="help">
+    </item>
+    
+    <item
+        android:id="@+id/save"
+        android:showAsAction="ifRoom|withText"
+        android:title="Сохранить">
+    </item>
+
+</menu>

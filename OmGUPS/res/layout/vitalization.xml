@@ -1,0 +1,98 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/fullTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Подробно режиме календаря:" />
+
+    <CheckBox
+        android:id="@+id/full_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="В вертикальной ориентации" />
+
+    <CheckBox
+        android:id="@+id/full_horisontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="В горизонтальной ориентации" />
+
+    <TextView
+        android:id="@+id/colorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="В режиме календаря выделять различными цветами:" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupCalendar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/radio0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="по предметам" />
+
+        <RadioButton
+            android:id="@+id/radio1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="по типу предметов" />
+        
+        <RadioButton
+            android:id="@+id/radio2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="по преподавателю" />
+
+        <RadioButton
+            android:id="@+id/radio3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="не выделять" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/pair3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="В режиме списка выделять различными цветами:" />
+
+    <RadioGroup
+        android:id="@+id/RadioGroupDaily"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/RadioButton01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="по предметам" />
+
+        <RadioButton
+            android:id="@+id/RadioButton02"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="по типу предметов" />
+        
+        <RadioButton
+            android:id="@+id/RadioButton03"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="по преподавателю" />
+
+        <RadioButton
+            android:id="@+id/RadioButton04"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="не выделять" />
+    </RadioGroup>
+
+</LinearLayout>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="light1">#10702a6a</color> <!-- пурпурный -->
+    <color name="dark1">#702a6a</color>
+    <color name="light2">#10FFD700</color> <!-- золотой -->
+    <color name="dark2">#FFD700</color>
+    <color name="light3">#104169E1</color> <!-- синий блеклый -->
+    <color name="dark3">#4169E1</color>
+    <color name="light4">#1032CD32</color> <!-- зеленый насыщенный -->
+    <color name="dark4">#32CD32</color>
+    <color name="light5">#108B0000</color> <!-- темно-красный -->
+    <color name="dark5">#8B0000</color>
+    <color name="light6">#10FFA500</color> <!-- оранжевый -->
+    <color name="dark6">#FFA500</color>
+    <color name="light7">#108A2BE2</color> <!-- фиолетовый -->
+    <color name="dark7">#8A2BE2</color>
+    <color name="light8">#10cdcd00</color> <!-- канарейка -->
+    <color name="dark8">#cdcd00</color>
+    <color name="light9">#1000bfff</color> <!-- голубое небо -->
+    <color name="dark9">#00bfff</color>
+    <color name="light10">#104d661a</color> <!-- болото -->
+    <color name="dark10">#4d661a</color>
+    <color name="light11">#108b4513</color> <!-- шоколад -->
+    <color name="dark11">#8b4513</color>
+    <color name="light12">#10FF1493</color> <!-- розовый -->
+    <color name="dark12">#FF1493</color>
+    <color name="light13">#10cd3700</color> <!-- красно-оранжевый -->
+    <color name="dark13">#cd3700</color>
+    <color name="light14">#104B0082</color> <!-- индиго -->
+    <color name="dark14">#4B0082</color>
+    <color name="light15">#10F0E68C</color> <!-- хаки -->
+    <color name="dark15">#F0E68C</color>
+    <color name="light16">#100000ff</color> <!-- насыщенный синий -->
+    <color name="dark16">#0000ff</color>
+    <color name="light17">#1032CD32</color> <!-- трава -->
+    <color name="dark17">#32CD32</color>
+    <color name="light18">#10FFDEAD</color> <!-- бежевый (Navajowhite) -->
+    <color name="dark18">#FFDEAD</color>
+    <color name="light19">#108b2323</color> <!-- бронза -->
+    <color name="dark19">#8b2323</color>
+    <color name="light20">#10ee9a00</color> <!-- желто-оранжевый -->
+    <color name="dark20">#ee9a00</color>
+    <color name="light21">#1000FFFF</color> <!-- вода -->
+    <color name="dark21">#00FFFF</color>
+    <color name="light22">#1000FF00</color> <!-- ядовито-зеленый -->
+    <color name="dark22">#00FF00</color>
+    <color name="light23">#102F4F4F</color> <!-- серый -->
+    <color name="dark23">#2F4F4F</color>
+    <color name="light24">#10800080</color> <!-- пурпурный -->
+    <color name="dark24">#800080</color>
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="list_background">#08080B</color>
+    <color name="list_background_pressed">#ссс</color>   
+    <color name="drawer_item_color">#fff</color> 
+    <color name="list_divider">#5e5e5e</color>
+    <color name="list_select">#5c5252</color>
+    <color name="schedule_dark">#321414</color>
+    <color name="schedule_light">#d4928c</color>
+</resources>

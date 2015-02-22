@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.omgups"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="21" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".SideBar"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateHidden" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="MainGroup"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+
+        <service
+            android:name="UpdateService"
+            android:enabled="true" >
+        </service>
+
+        <activity android:name="Timing" >
+        </activity>
+
+        <receiver
+            android:name=".AlarmManagerBroadcastReceiver"
+            android:process=":remote" >
+            <intent-filter>
+                <action android:name="com.example.omgups.invocation" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="OnBootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name="AdditionalGroup" >
+        </activity>
+        <activity android:name="Vitalization"></activity>
+    </application>
+
+</manifest>
