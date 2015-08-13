@@ -1,151 +1,135 @@
 package com.example.omgups;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-
-
-import org.json.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
+import android.view.MenuItem;
 import android.widget.Toast;
 /**Класс для выполнения действий в отдельном потоке.
  * Принятие Json'а со списком
  */
-public class GetListTask extends AsyncTask<Void, Void, Boolean> {
-	static Context context;
+public class GetListTask extends AsyncTask<MenuItem, Void, Boolean> {
+	Context context;
 	SharedPreferences sPref;
 	String item_list = null;
 	String takenJson = "";
 	final int TIMEOUT_MILLISEC = 5000;
 	static InputStream is = null;
-	private static final String LOG_TAG = "myLogs";
 	Date lastModifiedDate;
 	boolean current = false;
+	MenuItem item;
 
 	public GetListTask(Context context) {
 		super();
-		this.context = context;
+		this.context = context;		
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
+
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params) {
+	protected Boolean doInBackground(MenuItem... params) {
+		if (params.length != 0) {
+			item = params[0];
+		}
 		//Возвращать false, если изменений нет
-			sPref = context.getSharedPreferences("item_list", Context.MODE_PRIVATE);
-			Editor ed = sPref.edit();
-//			String dateStr = new String(sPref.getString("DATE", ""));
-			String dateStr = "";
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-			Date date = null;
+		sPref = context.getSharedPreferences("item_list", Context.MODE_PRIVATE);
+		Editor ed = sPref.edit();
+		String dateStr = new String(sPref.getString("DATE", ""));
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault());
+		Date date = null;
+		try {
+			date = (Date)formatter.parse(dateStr); //хранящаяся дата
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+			dateStr = "20000101000000";
 			try {
-				date = (Date)formatter.parse(dateStr); //хранящаяся дата
-			} catch (ParseException e1) {
-				e1.printStackTrace();
+				date = (Date)formatter.parse(dateStr);
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
-			HttpParams httpParams = new BasicHttpParams(); //Настроить параметры подключения
-			HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
-			HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC); //Установка ожидания
-			DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
-			String uri = context.getResources().getString(R.string.uri);
-			String url = uri + "getLists";
-			HttpGet httpGet = new HttpGet(url);
-			httpGet.setHeader("If-Modified-Since", dateStr);
-			HttpResponse httpResponse = null;
-			try {
-				httpResponse = httpClient.execute(httpGet); //Получить данные
-				String lastModified = httpResponse.getFirstHeader("Last-modified").toString().replaceFirst("Last-Modified: ", ""); //Считать время последнего изменения
-				lastModifiedDate = (Date)formatter.parse(lastModified); //Дата с сервера
-//				if (!dateStr.equals("")) {
-//					if (lastModifiedDate.getTime() == (date.getTime())) {
-//						current = true;
-//						//Если даты совпадают, изменений не требуется
-//						return false;
-//					}
-//				}
-				ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
-				HttpEntity httpEntity = httpResponse.getEntity(); //Считать данные
-				is = httpEntity.getContent();
-				BufferedReader reader = null;
-				reader = new BufferedReader(new InputStreamReader(is, "CP-1251"), 8);
-				StringBuilder sb = new StringBuilder();
-				String line = null;
-				while ((line = reader.readLine()) != null) {
-					sb.append(line + "\n");
-				}
-				is.close();
-				takenJson = sb.toString(); //Положить данные в удобоваримый вид
-				if (takenJson.isEmpty()) { //Если после всех операций все равно пустой	
+		}
+		String uri = context.getResources().getString(R.string.uri);
+		URL url;
+		try {
+			url = new URL(uri + "getLists" + "?last_refresh_dt=" + dateStr);
+			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+			urlConnection.setConnectTimeout(TIMEOUT_MILLISEC);
+			InputStream inputStream = urlConnection.getInputStream();
+			StringBuffer buffer = new StringBuffer();
+			String lastModified = urlConnection.getHeaderField("Last-modified");
+			lastModifiedDate = (Date)formatter.parse(lastModified); //Дата с сервера
+			if (!dateStr.equals("")) {
+				if (lastModifiedDate.getTime() == (date.getTime())) {
+					current = true;
+					//Если даты совпадают, изменений не требуется
 					return false;
 				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-				return false;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return false;
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+			ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
 
-
-			try {
-				globalParse();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "CP-1251")); 
+			String line;
+			while ((line = reader.readLine()) != null) {
+				buffer.append(line);
+			} 
+			takenJson = buffer.toString();
+			urlConnection.disconnect();
+			if (takenJson.isEmpty()) { //Если после всех операций все равно пустой	
 				return false;
 			}
-			return true;		
+			globalParse();
+		} catch (Exception e){
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
 	protected void onPostExecute(Boolean data) { //Предупреждение, если список пустой
-		if (!data && !current)
+		if (!data && !current) {
+			if (item != null) {
+				item.setVisible(false);
+			}
 			Toast.makeText(context, "Не удалось получить списки" + '\n'
 					+ "Возможно, сервер недоступен", Toast.LENGTH_LONG).show();
+		} else {
+			if (item != null) {
+				item.setActionView(R.layout.actionbar_finish); //В случае успешной загрузки показать галочку на месте progressbar, через секунду скрыть
+				new CountDownTimer(1000, 1000) {
+					public void onTick(long millisUntilFinished) {}
+					public void onFinish() { 
+						item.setVisible(false);
+					}
+				}.start();
+			}
+		}
 	}
-
-//	static public boolean isNetworkConnected() {
-//		Log.d(LOG_TAG, "11");
-//		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
-//		Log.d(LOG_TAG, "12");
-//		NetworkInfo ni = cm.getActiveNetworkInfo();
-//		Log.d(LOG_TAG, "13");
-//		if (ni == null) {
-//			// There are no active networks.
-//			return false;
-//		} else
-//			return true;
-//	}
 
 	private void globalParse() throws JSONException { //разбиение портянки на крупные составляющие
 		JSONObject obj = null;
 		obj = new JSONObject(takenJson);
 		sPref = context.getSharedPreferences("item_list", Context.MODE_PRIVATE);
 		Editor ed = sPref.edit();
-		
+
 		if (!obj.get("FACULTIES").toString().equals("NO_UPDATE_AVAILABLE"))
 			ed.putString("FACULTIES",obj.getString("FACULTIES"));
 		if (!obj.get("DEPARTMENTS").toString().equals("NO_UPDATE_AVAILABLE"))

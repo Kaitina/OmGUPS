@@ -1,8 +1,8 @@
 package com.example.omgups;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,8 +15,6 @@ import java.util.concurrent.TimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -24,21 +22,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.omgups.Parsers.PAIR;
@@ -49,70 +42,47 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 	 */
 	SharedPreferences sPref;
 	ListView lw;
-	GridView gw;
 	ScheduleAdapter adapter;
 	Button login, settings, update;
-	GetListTask glt = null;
-	String key;
+	GetListTask glt = null;	
 	Map<String, Integer> hm = new HashMap<String, Integer>();
+	String[] data;
 
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		sPref = getActivity().getSharedPreferences("groups", Context.MODE_PRIVATE);
 		View view = null;
-		if (sPref.contains("main_group") || sPref.contains("set")) {
+		boolean data = false;
+		if (sPref.contains("main_group") || sPref.contains("set") || sPref.contains("list")) {
 			if (sPref.contains(sPref.getString("main_group", "") + "main") || sPref.contains("set")) {
 				try {
 					view = inflater.inflate(R.layout.daily_schedule_fragment, null); //Если данные существуют, вывести фрагмент с листом
-					gw = (GridView)view.findViewById(R.id.daysView);
-					gw.setColumnWidth(30);
-					ArrayAdapter<String> ad = new ArrayAdapter<String>(getActivity(), R.layout.day, R.id.tv, getResources().getStringArray(R.array.days));
-					gw.setAdapter(ad);
-
 					lw = (ListView)view.findViewById(R.id.schedule);					
 					parseGroups(sPref.getString("set", ""), sPref.getString("main_group", ""));
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 				lw.setAdapter(adapter);
-				gw.setOnItemClickListener(new OnItemClickListener() {
-
-					@Override
-					public void onItemClick(AdapterView<?> parent,
-							View view, int position, long id) {
-						switch (position) { //формирование ключа для получения позиции
-						case 0:
-							key += "MONDAY"; break;
-						case 1:
-							key += "TUESDAY"; break;
-						case 2:
-							key += "WEDNESDAY"; break;
-						case 3:
-							key += "THURSDAY"; break;
-						case 4:
-							key += "FRIDAY"; break;
-						case 5:
-							key += "SATURDAY"; break;
-						}
-						if (hm.containsKey(key)) {
-							final Integer k = hm.get(key);
-							gw.post(new Runnable() {
-								@Override
-								public void run() {								
-									lw.setSelection(k);
-								}
-							});
-						} else {
-							Toast.makeText(getActivity(), "Неучебный день", Toast.LENGTH_SHORT).show();;
-						}
-						gw.setVisibility(View.GONE);
-						key = "";
-					}
-				});
-
 			}
 			else {
+				Set<String> hs = sPref.getStringSet("list", new HashSet<String>()); //блок для вывода хоть какой-то группы, если нет ни главной, ни следующей активной
+				String set[] = hs.toArray(new String [hs.size()]);
+				for (int i = 0; i < hs.size(); i++) {
+					if (sPref.contains(set[i] + "main")) {
+						try {
+							view = inflater.inflate(R.layout.daily_schedule_fragment, null); //Если данные существуют, вывести фрагмент с листом
+							lw = (ListView)view.findViewById(R.id.schedule);					
+							parseGroups("", set[i]);
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+						lw.setAdapter(adapter);
+						data = true;
+						break;
+					}
+				}
+				if (!data) {
 				view = inflater.inflate(R.layout.null_schedule_fragment, null); //Если данные не существуют, вывести информацию
 				login = (Button)view.findViewById(R.id.log_id);
 				settings = (Button)view.findViewById(R.id.set_id);
@@ -120,6 +90,7 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 				login.setOnClickListener(this);
 				settings.setOnClickListener(this);
 				update.setOnClickListener(this);
+				}
 			}
 		}
 		else {
@@ -225,7 +196,7 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 				if (sPref.contains(sPref.getString("main_group", "") + "main")) {					
 					android.app.FragmentManager fragmentManager = getFragmentManager();		
 					fragmentManager.beginTransaction()
-					.replace(R.id.content_frame, new DailyScheduleFragment()).commit();
+					.replace(R.id.container, new DailyScheduleFragment()).commit();
 				}
 			}
 			break;
@@ -238,8 +209,8 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 		String day = new String();
 		String day1 = new String();
 		String str = new String(); //Основное расписание
-		str = set.isEmpty() ?  new String (sPref.getString(sPref.getString("main_group", "") + "main", "")) : 
-			new String (sPref.getString(sPref.getString("set", "") + "main", ""));
+		str = set.isEmpty() ?  new String (sPref.getString(main + "main", "")) : 
+			new String (sPref.getString(set + "main", ""));
 		JSONObject obj = new JSONObject(str);
 		//		String str1 = new String(); //Модификации
 		//		str1 = set.isEmpty() ?  new String (sPref.getString(sPref.getString("main_group", "") + "mod", "")) : 
@@ -296,7 +267,7 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 			if (!obj.has(day)) { //Если такого дня в расписании не существует - перейти на следующую итерацию
 				continue;
 			}
-			String group = set.isEmpty() ?  new String (sPref.getString("main_group", "")) : new String (sPref.getString("set", "")); //определяем, группа ли для забора параметров
+			String group = set.isEmpty() ?  main : set; //определяем, группа ли для забора параметров
 			Boolean isGroup; 
 			try {
 				Integer.parseInt(group.charAt(0) + "");
@@ -308,10 +279,10 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 			ArrayList<PAIR> dayList = PAIR.fromJson(obj.getJSONArray(day), isGroup);
 			// упаковываем данные в понятную для адаптера структуру
 			for (int i = 0; i < dayList.size(); ++i) { //Оформление расписания для конкретного дня
-//				if (i > 0)
-//					if (!isGroup && (dayList.get(i).PAIR_NUMBER == Integer.parseInt(list.get(list.size()-1).getN()))) {
-//						continue;
-//					}
+				//				if (i > 0)
+				//					if (!isGroup && (dayList.get(i).PAIR_NUMBER == Integer.parseInt(list.get(list.size()-1).getN()))) {
+				//						continue;
+				//					}
 
 				String teacher = new String();				
 				teacher = dayList.get(i).NAME;
@@ -372,67 +343,85 @@ public class DailyScheduleFragment extends Fragment implements OnClickListener {
 
 
 
-	@SuppressWarnings("deprecation")
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.daily_schedule, menu);
-
-		ActionBar bar = getActivity().getActionBar();
-		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		//		AttributeSet attr = 
-		//		TextView view = new TextView(getActivity(),)
+		String group = null;
+			group = sPref.getString("set",  sPref.getString("main_group", "Группа"));
 		if (sPref.contains("list")) {
 			Set<String> list = sPref.getStringSet("list", new HashSet<String>());
-			final String[] data = list.toArray(new String[list.size()]);
-			final String[] dataa = new String[list.size() + 1];
-			dataa[0] = "Расписание: " + (sPref.getString("set", "").isEmpty() ? sPref.getString("main_group", "") : sPref.getString("set", ""));
-			for (int i = 0; i < list.size(); i++) {
-				dataa[i+1] = data[i];
-			}
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-					R.layout.drawer_list_item, R.id.label, dataa);
-			adapter.setDropDownViewResource(R.layout.drawer_list_item);
-			bar.setListNavigationCallbacks(adapter, new OnNavigationListener() {
+			data = list.toArray(new String[list.size()]);
+			Arrays.sort(data); //Получение списка групп для вывода и сортировка
 
-				@Override
-				public boolean onNavigationItemSelected(int position, long id) {
-					if (!dataa[position].contains("Расписание")) {
-						Editor ed = sPref.edit();
-						ed.putString("set", dataa[position]).apply();
-						FragmentTransaction ft = getFragmentManager().beginTransaction();
-						ft.replace(R.id.content_frame, new DailyScheduleFragment()).commit();
-					}
-					return true;
-				}
-			});
-		}
-		bar.setSelectedNavigationItem(-1);
+			SubMenu subMenuGroup = menu.addSubMenu(Menu.NONE, 100, 10, group);
+			subMenuGroup.getItem().setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+			for (int i = 0; i < list.size(); i++) {
+				subMenuGroup.add(Menu.NONE, 101+i, Menu.NONE, data[i]);
+			}
+
+		}		
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		String key = null;
 		switch (item.getItemId()) {
 		case R.id.ds_today:
 			lw.setSelection(0);
 			break;
-		case R.id.ds_navigation_1:
-			if (gw.getVisibility() == View.VISIBLE) {
-				gw.setVisibility(View.GONE);
-				key = "";
-			} else {
-				gw.setVisibility(View.VISIBLE);
-				key = "ODD_";
-			}
+		case R.id.mon1:
+			key = "ODD_MONDAY";
 			break;
-		case R.id.ds_navigation_2:
-			if (gw.getVisibility() == View.VISIBLE) {
-				gw.setVisibility(View.GONE);
-				key = "";
-			} else {
-				gw.setVisibility(View.VISIBLE);
-				key = "EVEN_";
-			}
+		case R.id.tue1:
+			key = "ODD_TUESDAY";
 			break;
+		case R.id.wed1:
+			key = "ODD_WEDNESDAY";
+			break;
+		case R.id.thu1:
+			key = "ODD_THURSDAY";
+			break;
+		case R.id.fri1:
+			key = "ODD_FRIDAY";
+			break;
+		case R.id.sat1:
+			key = "ODD_SATURDAY";
+			break;
+		case R.id.mon2:
+			key = "EVEN_MONDAY";
+			break;
+		case R.id.tue2:
+			key = "EVEN_TUESDAY";
+			break;
+		case R.id.wed2:
+			key = "EVEN_WEDNESDAY";
+			break;
+		case R.id.thu2:
+			key = "EVEN_THURSDAY";
+			break;
+		case R.id.fri2:
+			key = "EVEN_FRIDAY";
+			break;
+		case R.id.sat2:
+			key = "EVEN_SATURDAY";
+			break;
+		case R.id.ds_navigation_1: break;
+		case R.id.ds_navigation_2: break;
+		case 100: break; //Для вывода подменю
+		case 16908332: break; //Для вывода бокового меню
+		default:
+			Editor ed = sPref.edit();
+			ed.putString("set", data[item.getItemId()-101]).apply();
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			ft.replace(R.id.container, new DailyScheduleFragment()).commit();
+			break;
+		}
+		if (key != null) {
+			if (hm.containsKey(key)) {
+				lw.setSelection(hm.get(key));
+			} else {
+				Toast.makeText(getActivity(), "Неучебный день", Toast.LENGTH_SHORT).show();;
+			}
 		}
 		return super.onOptionsItemSelected(item);
 	}

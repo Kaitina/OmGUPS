@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.util.Log;
 
 public class UpdateService extends Service {
 	/** 
@@ -115,6 +116,7 @@ public class UpdateService extends Service {
 			INTERVAL = AlarmManager.INTERVAL_DAY*days;
 			break;
 		default:
+			Log.d("11", "ó3");
 			need = false;
 			break;
 		}

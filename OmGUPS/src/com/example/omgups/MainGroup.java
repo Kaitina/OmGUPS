@@ -6,15 +6,15 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.Menu;
@@ -27,7 +27,7 @@ import com.example.omgups.Parsers.FACULTIES;
 import com.example.omgups.Parsers.GROUPS;
 import com.example.omgups.Parsers.TEACHERS;
 
-public class MainGroup extends Activity {
+public class MainGroup extends ActionBarActivity  {
 	/** 
 	 *  ласс дл€ выбора основной группы в вертикальной ориентации
 	 * создает 2 вложенных листа, можно выбрать либо препода, либо группу
@@ -39,6 +39,7 @@ public class MainGroup extends Activity {
 	ExpandableListView list;
 	ExpListAdapter adapter;
 	SharedPreferences sPref;
+	MenuItem refreshItem;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,9 @@ public class MainGroup extends Activity {
 				return false;
 			}
 		});
+		refreshItem = (MenuItem) menu.findItem(R.id.download_pb);
+		refreshItem.setActionView(R.layout.actionbar_progress);
+		refreshItem.setVisible(false);
         return true;
     }
  
@@ -79,7 +83,7 @@ public class MainGroup extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.save:
-        	onDestroy(); break;
+        	save(); break;
         case R.id.help:
         	//бытьподсказке
         	break;
@@ -113,6 +117,19 @@ public class MainGroup extends Activity {
 			gsht = new GetScheduleTask(getApplicationContext());
 			if (SideBar.isNetworkConnected(getApplicationContext())) {
 				gsht.execute(ids); //¬ыполн€ем запрос на получение нужных расписаний
+				try {
+					if (gsht.get() == -1) {
+						refreshItem.setVisible(false);
+					} else {		
+						refreshItem.setActionView(R.layout.actionbar_finish); //¬ случае успешной загрузки показать галочку на месте progressbar, через секунду скрыть
+						new CountDownTimer(500, 500) {
+							public void onTick(long millisUntilFinished) {}
+							public void onFinish() { 
+								refreshItem.setVisible(false);
+							}
+						}.start();
+					}
+				} catch (Exception e) {	} 
 			}
 			else {
 				Toast.makeText(getApplicationContext(), "Ќе удалось получить списки" + '\n'

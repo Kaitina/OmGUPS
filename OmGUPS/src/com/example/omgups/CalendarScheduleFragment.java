@@ -24,12 +24,12 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -37,7 +37,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -53,6 +52,7 @@ public class CalendarScheduleFragment extends Fragment implements OnClickListene
 	//	GridView odd, even;
 	ListView pairs;
 	TextView num, type, auditory, time, teacher, name;
+	String[] data;
 	//	CalendarScheduleAdapter adapterOdd;
 	//	CalendarScheduleAdapter adapterEven; 
 
@@ -169,7 +169,7 @@ public class CalendarScheduleFragment extends Fragment implements OnClickListene
 				if (sPref.contains(sPref.getString("main_group", "") + "main")) {
 					android.app.FragmentManager fragmentManager = getFragmentManager();		
 					fragmentManager.beginTransaction()
-					.replace(R.id.content_frame, new CalendarScheduleFragment()).commit();
+					.replace(R.id.container, new CalendarScheduleFragment()).commit();
 				}
 			}
 			break;
@@ -180,34 +180,38 @@ public class CalendarScheduleFragment extends Fragment implements OnClickListene
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.calendar_schedule, menu);
 
-		ActionBar bar = getActivity().getActionBar();
-		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+//		if (sPref.contains("list")) {
+//			Set<String> list = sPref.getStringSet("list", new HashSet<String>());
+//			final String[] data = list.toArray(new String[list.size()]);
+//			String group = null;
+//			if (sPref.contains(sPref.getString("main_group", "") + "main") || sPref.contains("set")) {
+//				group = sPref.getString("set",  sPref.getString("main_group", "Группа"));
+//			}
+//			if (sPref.contains("list")) {
+//				SubMenu subMenuGroup = menu.addSubMenu(Menu.NONE, 100, Menu.NONE, group);
+//				subMenuGroup.getItem().setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+//				for (int i = 0; i < list.size(); i++) {
+//					subMenuGroup.add(Menu.NONE, 101+i, Menu.NONE, data[i]);
+//				}
+//			}
+//		}
+		
+		String group = null;
+		if (sPref.contains(sPref.getString("main_group", "") + "main") || sPref.contains("set")) {
+			group = sPref.getString("set",  sPref.getString("main_group", "Группа"));
+			
+		}
 		if (sPref.contains("list")) {
 			Set<String> list = sPref.getStringSet("list", new HashSet<String>());
-			final String[] data = list.toArray(new String[list.size()]);
-			final String[] dataa = new String[list.size() + 1];
-			dataa[0] = "Расписание: " + (sPref.getString("set", "").isEmpty() ? sPref.getString("main_group", "") : sPref.getString("set", ""));
-			for (int i = 0; i < list.size(); i++) {
-				dataa[i+1] = data[i];
-			}
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-					R.layout.drawer_list_item, R.id.label, dataa);
-			adapter.setDropDownViewResource(R.layout.drawer_list_item);
-			bar.setListNavigationCallbacks(adapter, new OnNavigationListener() {
+			data = list.toArray(new String[list.size()]);
 
-				@Override
-				public boolean onNavigationItemSelected(int position, long id) {
-					if (!dataa[position].contains("Расписание")) {
-						Editor ed = sPref.edit();
-						ed.putString("set", dataa[position]).apply();
-						FragmentTransaction ft = getFragmentManager().beginTransaction();
-						ft.replace(R.id.content_frame, new CalendarScheduleFragment()).commit();
-					}
-					return true;
-				}
-			});
-		}
-		bar.setSelectedNavigationItem(-1);
+			SubMenu subMenuGroup = menu.addSubMenu(Menu.NONE, 100, Menu.NONE, group);
+			subMenuGroup.getItem().setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+			for (int i = 0; i < list.size(); i++) {
+				subMenuGroup.add(Menu.NONE, 101+i, Menu.NONE, data[i]);
+			}
+
+		}		
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -231,6 +235,13 @@ public class CalendarScheduleFragment extends Fragment implements OnClickListene
 				detailll.setVisibility(View.GONE);
 				getActivity().getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE).edit().putBoolean("detail_visible", true).apply();
 			}
+			break;
+		case 100: break;
+		default:
+			Editor ed = sPref.edit();
+			ed.putString("set", data[item.getItemId()-101]).apply();
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			ft.replace(R.id.container, new CalendarScheduleFragment()).commit();
 			break;
 		}
 		return super.onOptionsItemSelected(item);

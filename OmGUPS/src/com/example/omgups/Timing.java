@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -13,7 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
 
-public class Timing extends Activity{
+public class Timing extends ActionBarActivity {
 	/** 
 	 * Активность для работы с настройками синхронизации
 	 * Открывается в вертикальной ориентации

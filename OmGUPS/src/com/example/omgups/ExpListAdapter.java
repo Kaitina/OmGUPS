@@ -141,7 +141,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		view = inflater.inflate(R.layout.child_view, null);
 		if (mGroup.get(groupPosition).get(childPosition).isMarked()) {
-			view.setBackgroundColor(mContext.getResources().getColor(R.color.list_select));
+			view.setBackgroundColor(mContext.getResources().getColor(R.color.schedule_light));
 		}
 		final ViewHolder holder = new ViewHolder();
 		holder.textView = (TextView) view.findViewById(R.id.textChild);
@@ -183,7 +183,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 				//				rb = lastrb;
 				if (!mGroup.get(groupPosition).get(childPosition).isSelected()) {
 					if (!mGroup.get(groupPosition).get(childPosition).isMarked()) {
-						view.setBackgroundColor(mContext.getResources().getColor(R.color.list_select));
+						view.setBackgroundColor(mContext.getResources().getColor(R.color.schedule_light));
 						mGroup.get(groupPosition).get(childPosition).setMarked(true);
 					}
 					else {

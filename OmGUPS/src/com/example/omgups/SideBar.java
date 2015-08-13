@@ -4,76 +4,57 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlarmManager;
-import android.app.Fragment;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.SystemClock;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.ViewGroup;
 
-public class SideBar extends Activity {
+public class SideBar extends ActionBarActivity implements
+NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-	private DrawerLayout myDrawerLayout;
-	private ListView myDrawerList;
-	private ActionBarDrawerToggle myDrawerToggle;
-
-	private CharSequence myDrawerTitle;
-	private CharSequence myTitle;
-
+	private NavigationDrawerFragment mNavigationDrawerFragment;
+	private CharSequence mTitle;
 	private String[] viewsNames;
+	MenuItem refreshItem;
+	boolean visible = false;
+
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_side_bar);	
+		setContentView(R.layout.activity_side_bar);		
+		registerReceiver(broadcastReceiver, new IntentFilter("FINISH_UPDATE"));
 
-		myTitle =  getTitle();	
-		myDrawerTitle = getResources().getString(R.string.menu);
+		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.navigation_drawer);
+		mTitle = getTitle();
 
+		// Set up the drawer.
+		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
+				(DrawerLayout) findViewById(R.id.drawer_layout));
 		viewsNames = getResources().getStringArray(R.array.views_array);
-		myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		myDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-//		myDrawerList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, viewsNames));
-		myDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, viewsNames));
-
-		android.app.ActionBar actionBar = getActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);   
-
-		myDrawerToggle = new ActionBarDrawerToggle(this, myDrawerLayout,
-				R.drawable.ic_drawer, //nav menu toggle icon
-				R.string.app_name, // nav drawer open - description for accessibility
-				R.string.app_name // nav drawer close - description for accessibility
-				){
-			public void onDrawerClosed(View view) {
-				getActionBar().setTitle(myTitle);
-				invalidateOptionsMenu();
-			}
-
-			public void onDrawerOpened(View drawerView) {
-				getActionBar().setTitle(myDrawerTitle);
-				invalidateOptionsMenu();
-			}
-		};
-		myDrawerLayout.setDrawerListener(myDrawerToggle);
 
 		if (savedInstanceState == null) {
-			displayView(1);
+			displayView(0);
 		}
-		myDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+		getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.color.schedule_dark));
 
 
 		//		Стартуем сервис, если он не запущен
@@ -93,6 +74,7 @@ public class SideBar extends Activity {
 
 		//Проверяем обновления, если в настройках стоит "при запуске"
 		SharedPreferences sPref = getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE);
+
 		String timing = sPref.getString("timing_date", "");
 		if (timing.equals("ever") && SideBar.isNetworkConnected(getApplicationContext())) {
 			Intent intent = new Intent(this, AlarmManagerBroadcastReceiver.class);
@@ -101,37 +83,51 @@ public class SideBar extends Activity {
 			alarmManager.set(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + 5000, pendingIntent);
 		}
 	}
+	
+	BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Приемник широковещательных запросов, а именно, запроса "конец обновления, скрыть progressbar"
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	refreshItem.setActionView(R.layout.actionbar_finish);
+	    	new CountDownTimer(1000, 1000) {
+				public void onTick(long millisUntilFinished) {}
+				public void onFinish() { 
+					refreshItem.setVisible(false);
+				}
+			}.start();
+			visible = false;
+	    }
+	};
 
-	private class DrawerItemClickListener implements ListView.OnItemClickListener {
-		@Override
-		public void onItemClick(
-				AdapterView<?> parent, View view, int position, long id
-				) {
-			displayView(position);
-		}               
+
+	@Override
+	public void onNavigationDrawerItemSelected(int position) {
+		// update the main content by replacing fragments
+		displayView(position);
 	}
 
 	private void displayView(int position) {
 		// update the main content by replacing fragments
-		Fragment fragment = null;
+		android.app.Fragment fragment = null;
 		switch (position) {
-		case 0: //Окно обновления. Запустить полное обновление
+		case 0: //Окно подробного расписания
+			fragment = new DailyScheduleFragment();
+			break;
+		case 1: //Окно расписания по типу календарь
+			fragment = new CalendarScheduleFragment();
+			break;
+		case 2: //Окно перехода в настройки
+			fragment = new Settings();
+			break;
+		case 3: //Окно авторизации.. Когда-нибудь
+			//Тут должен быть вызов активности авторизации
+			break;
+		case 4: //Окно обновления. Запустить полное обновление
+			visible = true;
+			refreshItem.setVisible(visible);
 			Intent intent = new Intent(this, AlarmManagerBroadcastReceiver.class);
 			PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 			alarmManager.set(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + 5000, pendingIntent);
-			break;
-		case 1: //Окно подробного расписания
-			fragment = new DailyScheduleFragment();
-			break;
-		case 2: //Окно расписания по типу календарь
-			fragment = new CalendarScheduleFragment();
-			break;
-		case 3: //Окно перехода в настройки
-			fragment = new Settings();
-			break;
-		case 4: //Окно авторизации.. Когда-нибудь
-			//Тут должен быть вызов активности авторизации
 			break;
 		default:
 			break;
@@ -139,60 +135,73 @@ public class SideBar extends Activity {
 
 		if (fragment != null) {
 			android.app.FragmentManager fragmentManager = getFragmentManager();			
-			fragmentManager.beginTransaction()
-			.replace(R.id.content_frame, fragment).commit();
-
-			myDrawerList.setItemChecked(position, true);
-			myDrawerList.setSelection(position);
-			setTitle(viewsNames[position]);
-			myDrawerLayout.closeDrawer(myDrawerList);
+			fragmentManager.beginTransaction().replace(R.id.container, fragment).commit();			
 		}
+	}
+
+	public void onSectionAttached(int number) {
+		mTitle = viewsNames[number];
+	}
+
+	public void restoreActionBar() {
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		actionBar.setDisplayShowTitleEnabled(true);
+		actionBar.setTitle(mTitle);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.global, menu);
-		return true;
+		if (!mNavigationDrawerFragment.isDrawerOpen()) {
+			getMenuInflater().inflate(R.menu.global, menu);
+			refreshItem = (MenuItem) menu.findItem(R.id.download_pb);
+			refreshItem.setActionView(R.layout.actionbar_progress);
+			refreshItem.setVisible(visible);
+			restoreActionBar();
+			return true;
+		}
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (myDrawerToggle.onOptionsItemSelected(item)) {
-			return true;
-		}
-		switch (item.getItemId()) {
-//		case R.id.action_settings:
-//			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	/**
-	 * Called when invalidateOptionsMenu() is triggered
+	 * A placeholder fragment containing a simple view.
 	 */
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		return super.onPrepareOptionsMenu(menu);
+	public static class PlaceholderFragment extends Fragment {
+
+		private static final String ARG_SECTION_NUMBER = "section_number";
+
+		public static PlaceholderFragment newInstance(int sectionNumber) {
+			PlaceholderFragment fragment = new PlaceholderFragment();
+			Bundle args = new Bundle();
+			args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+			fragment.setArguments(args);
+			return fragment;
+		}
+
+		public PlaceholderFragment() {
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_side_bar, container,
+					false);
+			return rootView;
+		}
+
+		@Override
+		public void onAttach(Activity activity) {
+			super.onAttach(activity);
+			((SideBar) activity).onSectionAttached(getArguments().getInt(
+					ARG_SECTION_NUMBER));
+		}
 	}
 
-	@Override
-	public void setTitle(CharSequence title) {
-		myTitle = title;
-		getActionBar().setTitle(myTitle);
-	}
-
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		myDrawerToggle.syncState();
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		myDrawerToggle.onConfigurationChanged(newConfig);
-	}
 
 	public static boolean isNetworkConnected(Context c) {
 		ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -202,14 +211,14 @@ public class SideBar extends Activity {
 			return false;
 		} else
 			return true;
-	}
-	
+	}	
+
 	@Override
 	public void onDestroy() {
+		unregisterReceiver(broadcastReceiver);
 		SharedPreferences sPref = getSharedPreferences("groups", Context.MODE_PRIVATE);
 		sPref.edit().remove("set").apply(); //Запуск снова с главой группы
 		super.onDestroy();
 	}
-
-
+	
 }

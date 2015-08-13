@@ -1,9 +1,10 @@
 package com.example.omgups;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,14 +12,6 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -50,80 +43,153 @@ public class GetScheduleTask extends AsyncTask<String, Void, Integer> {
 
 	@Override
 	protected Integer doInBackground(String... params) {
-		//Возвращать false, если изменений нет
-			sPref = context.getSharedPreferences("groups", Context.MODE_PRIVATE);
-			Editor ed = sPref.edit();
-//			String dateStr = new String(sPref.getString("DATE", ""));
-			String dateStr = "";
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-			Date date = null;
+		//Возвращать 0, если изменений нет		
+		sPref = context.getSharedPreferences("groups", Context.MODE_PRIVATE);
+		Editor ed = sPref.edit();
+		String dateStr = new String(sPref.getString("DATE", ""));
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault());
+		Date date = null;
+		try {
+			date = (Date)formatter.parse(dateStr); //хранящаяся дата
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+			dateStr = "20000101000000";
 			try {
-				date = (Date)formatter.parse(dateStr); //хранящаяся дата
-			} catch (ParseException e1) {}
-			HttpParams httpParams = new BasicHttpParams(); //Настроить параметры подключения
-			HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
-			HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC); //Установка ожидания
-			DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
-
-			//Кусок кода, формирующий, куда отправлять (какие данные просить)
-			String parameters = new String("?");
-			for (String p : params) { //Заполнить строку параметров всеми переданными
-				if (p.charAt(0) == 'g') {
-					parameters += "id_user=" + p.replace("g", "") + "&";
-				}
-				if (p.charAt(0) == 't') {
-					parameters += "id_user=" + p.replace("t", "") + "&";
-				}
+				date = (Date)formatter.parse(dateStr);
+			} catch (ParseException e) {
+				e.printStackTrace();
 			}
-			String uri = context.getResources().getString(R.string.uri);
-			String url = uri + "getSchedule" + parameters.replaceFirst("&$", ""); //Если не единица, нужно добавить параметры
-			HttpGet httpGet = new HttpGet(url);
-			httpGet.setHeader("If-Modified-Since", dateStr);
-			HttpResponse httpResponse = null;
-			try {
-				httpResponse = httpClient.execute(httpGet); //Получить данные
-				String lastModified = httpResponse.getFirstHeader("Last-modified").toString().replaceFirst("Last-Modified: ", ""); //Считать время последнего изменения
-								try {
-									lastModifiedDate = (Date)formatter.parse(lastModified);
-								} catch (ParseException e) {} //Дата с сервера
-//								if (!dateStr.equals("")) {
-//									Log.d("11", lastModifiedDate.toString());
-//									if (lastModifiedDate.getTime() == (date.getTime())) {
-//										//Если даты совпадают, изменений не требуется
-//										return 0;
-//									}
-//								}
-								ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
-				HttpEntity httpEntity = httpResponse.getEntity(); //Считать данные
-				is = httpEntity.getContent();
-				BufferedReader reader = null;
-				reader = new BufferedReader(new InputStreamReader(is, "CP-1251"), 8);
-				StringBuilder sb = new StringBuilder();
-				String line = null;
-				while ((line = reader.readLine()) != null) {
-					sb.append(line + "\n");
+		}
+		//Кусок кода, формирующий, куда отправлять (какие данные просить)
+		String parameters = new String("?");
+		for (String p : params) { //Заполнить строку параметров всеми переданными
+			if (p.charAt(0) == 'g') {
+				parameters += "id_user=" + p.replace("g", "") + "&";
+			}
+			if (p.charAt(0) == 't') {
+				parameters += "id_user=" + p.replace("t", "") + "&";
+			}
+		}
+		String uri = context.getResources().getString(R.string.uri) + "getSchedule" + parameters.replaceFirst("&$", ""); //Если не единица, нужно добавить параметры
+		URL url;
+		try {
+			url = new URL(uri + "&last_refresh_dt=" + dateStr);
+			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+			urlConnection.setConnectTimeout(TIMEOUT_MILLISEC);
+			InputStream inputStream = urlConnection.getInputStream();
+			StringBuffer buffer = new StringBuffer();
+			String lastModified = urlConnection.getHeaderField("Last-modified");
+				lastModifiedDate = (Date)formatter.parse(lastModified); //Дата с сервера
+				if (!dateStr.equals("")) {
+					if (lastModifiedDate.getTime() == (date.getTime())) {
+						//Если даты совпадают, изменений не требуется
+						return 0;
+					}
 				}
-				is.close();
-				takenJson = sb.toString(); //Положить данные в удобоваримый вид
+				ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
+				
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "CP-1251")); 
+				String line;
+				while ((line = reader.readLine()) != null) {
+					buffer.append(line);
+				} 
+				takenJson = buffer.toString();
+				urlConnection.disconnect();
 				if (takenJson.isEmpty()) { //Если после всех операций все равно пустой	
 					return -1;
 				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-				return -1;
-			} catch (IOException e) {
-				e.printStackTrace();
+				globalParse();
+			} catch (Exception e){
 				return -1;
 			}
 
-			try {
-				globalParse();
-			} catch (JSONException e) {
-				e.printStackTrace();
-				return -1;
-			}
 			return count;
-	}
+		}
+		
+		
+		
+//		sPref = context.getSharedPreferences("groups", Context.MODE_PRIVATE);
+//		Editor ed = sPref.edit();
+//		String dateStr = new String(sPref.getString("DATE", ""));
+//		//			String dateStr = "";
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+//		//			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+//		Date date = null;
+//		try {
+//			date = (Date)formatter.parse(dateStr); //хранящаяся дата
+//		} catch (ParseException e1) {
+//			e1.printStackTrace();
+//			dateStr = "20000101000000";
+//			try {
+//				date = (Date)formatter.parse(dateStr);
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		HttpParams httpParams = new BasicHttpParams(); //Настроить параметры подключения
+//		HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
+//		HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC); //Установка ожидания
+//		DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
+//
+//		//Кусок кода, формирующий, куда отправлять (какие данные просить)
+//		String parameters = new String("?");
+//		for (String p : params) { //Заполнить строку параметров всеми переданными
+//			if (p.charAt(0) == 'g') {
+//				parameters += "id_user=" + p.replace("g", "") + "&";
+//			}
+//			if (p.charAt(0) == 't') {
+//				parameters += "id_user=" + p.replace("t", "") + "&";
+//			}
+//		}
+//		String uri = context.getResources().getString(R.string.uri);
+//		String url = uri + "getSchedule" + parameters.replaceFirst("&$", ""); //Если не единица, нужно добавить параметры
+//		url += "&last_refresh_dt=" + dateStr;
+//		HttpGet httpGet = new HttpGet(url);
+//		//			httpGet.setHeader("If-Modified-Since", dateStr);
+//		HttpResponse httpResponse = null;
+//		try {
+//			httpResponse = httpClient.execute(httpGet); //Получить данные
+//			String lastModified = httpResponse.getFirstHeader("Last-modified").toString().replaceFirst("Last-Modified: ", ""); //Считать время последнего изменения
+//			try {
+//				lastModifiedDate = (Date)formatter.parse(lastModified);
+//			} catch (ParseException e) {} //Дата с сервера
+//			if (!dateStr.equals("")) {
+//				if (lastModifiedDate.getTime() == (date.getTime())) {
+//					//Если даты совпадают, изменений не требуется
+//					return 0;
+//				}
+//			}
+//			ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
+//			HttpEntity httpEntity = httpResponse.getEntity(); //Считать данные
+//			is = httpEntity.getContent();
+//			BufferedReader reader = null;
+//			reader = new BufferedReader(new InputStreamReader(is, "CP-1251"), 8);
+//			StringBuilder sb = new StringBuilder();
+//			String line = null;
+//			while ((line = reader.readLine()) != null) {
+//				sb.append(line + "\n");
+//			}
+//			is.close();
+//			takenJson = sb.toString(); //Положить данные в удобоваримый вид
+//			if (takenJson.isEmpty()) { //Если после всех операций все равно пустой	
+//				return -1;
+//			}
+//		} catch (ClientProtocolException e) {
+//			e.printStackTrace();
+//			return -1;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return -1;
+//		}
+//
+//		try {
+//			globalParse();
+//		} catch (JSONException e) {
+//			e.printStackTrace();
+//			return -1;
+//		}
+//		return count;
+//	}
 
 	@Override
 	protected void onPostExecute(Integer data) { //Предупреждение, если список пустой
@@ -156,23 +222,23 @@ public class GetScheduleTask extends AsyncTask<String, Void, Integer> {
 				if (!groupName.equals(sPref.getString("main_group", ""))) {
 					mainAdd = true; //Для оповещений. определение ключевых изменений для дополнительных групп
 				}
-				
+
 				//Блок, заполняющий списки пар для цветовой разметки и преподавателей
 				for (int j = 0; j < days.length; j++) {
 					if (array.getJSONObject(i).getJSONObject("SCHEDULE_MAIN").has(days[j])) {
-					JSONArray arr = array.getJSONObject(i).getJSONObject("SCHEDULE_MAIN").getJSONArray(days[j]);
-					for (int k = 0; k < arr.length(); k++) {
-						try {
-							Integer.parseInt(groupName.charAt(0) + "");
-							newTeachers.add(arr.getJSONObject(k).getString("TEACHER_NAME")); //проверка пройдена - первый символ число, объъект группа
-					    } catch (NumberFormatException e) {
-					    	newTeachers.add(arr.getJSONObject(k).getString("GROUP_NAME")); //проверка не пройдена, первый символ не число, объект - преподаватель
-					    }
-						newNames.add(arr.getJSONObject(k).getString("DISCIPLINE"));
+						JSONArray arr = array.getJSONObject(i).getJSONObject("SCHEDULE_MAIN").getJSONArray(days[j]);
+						for (int k = 0; k < arr.length(); k++) {
+							try {
+								Integer.parseInt(groupName.charAt(0) + "");
+								newTeachers.add(arr.getJSONObject(k).getString("TEACHER_NAME")); //проверка пройдена - первый символ число, объъект группа
+							} catch (NumberFormatException e) {
+								newTeachers.add(arr.getJSONObject(k).getString("GROUP_NAME")); //проверка не пройдена, первый символ не число, объект - преподаватель
+							}
+							newNames.add(arr.getJSONObject(k).getString("DISCIPLINE"));
+						}
 					}
 				}
-				}
-				
+
 			}
 			if (!array.getJSONObject(i).get("SCHEDULE_MOD").toString().equals("NO_UPDATES_AVAILABLE")) {
 				ed.putString(groupName + "mod",array.getJSONObject(i).getString("SCHEDULE_MOD")).apply();
@@ -200,45 +266,49 @@ public class GetScheduleTask extends AsyncTask<String, Void, Integer> {
 		compare ("pair_names", newNames);
 		compare ("pair_teachers", newTeachers);
 	}
-	
+
 	private void compare(String pref, LinkedHashSet<String> newNames) { //Блок сравнения списка загруженных пар с прошлым списком пар
 		Editor ed = sPref.edit();
-		if (sPref.contains(pref)) {
+		if (sPref.contains(pref)) { //При существовании подобного списка необходимо заменить старые элементы на новые
 			Set<String> oldNames = sPref.getStringSet(pref, new LinkedHashSet<String>());
 			String[] oldN = {};
-			oldN = oldNames.toArray(new String[oldNames.size()]);			
+			oldN = oldNames.toArray(new String[oldNames.size()]);
 			ArrayList<Integer> num = new ArrayList<Integer>();
 			for (int i = 0; i < oldNames.size(); i++) { //удалить все устаревшие элементы
-				if (!newNames.contains(oldN[i]) || oldN[i].equals("")) {
-					oldN[i] = "";
+				if (!newNames.contains(oldN[i])) {
+					oldNames.remove(oldN[i]);
 					num.add(i);
 				} else { //и все дублирующиеся из нового списка
 					newNames.remove(oldN[i]);
 				}
 			}
-			String[] newN = {};
-			newN = newNames.toArray(new String[newNames.size()]);
-			int i = 0;
-			for (; i < newNames.size(); i++) {
-				if (i > num.size()) { //При превышении лимита свободных ячеек следующий блок
-					continue;
-				} else {
-					oldN[num.get(i)] = newN[i];
-				}
-			}
+			oldN = oldNames.toArray(new String[oldNames.size()]);
+			String[] newN = newNames.toArray(new String[newNames.size()]); //Создание списков старых и новых расписаний для поэлементного внесения
 			LinkedHashSet<String> pairNames = new LinkedHashSet<String>();
-			for (int j =0; j < oldN.length; j++) {
-				pairNames.add(oldN[j]);
-			}
-			if (i > num.size()) {//Блок, выполняющийся при превышении
-				for (; i < num.size(); i++) {
-				pairNames.add(newN[i]);
+			int oldIteration = 0, newIteration = 0;
+			for (int i = 0; i < oldNames.size() + newNames.size(); i++) { //Создание нового актуального списка
+				if (num.contains(i)) { //Если в старом списке дыра
+					if (newIteration < newN.length) { //Заполнить ее новым значением, если оно есть
+						pairNames.add(newN[newIteration]);
+						newIteration++;
+					}
+				} else { //Если есть значение, внести его
+					if (oldIteration < oldN.length) { //Если, конечно, значения остались
+						pairNames.add(oldN[oldIteration]);
+						oldIteration++;
+					} else { //Если не остались - дозаполнить новыми
+						pairNames.add(newN[newIteration]);
+						newIteration++;
+					}
 				}
 			}
 			//Списки пар готовы к погрузке
-			ed.putStringSet(pref, pairNames).apply();;
+			ed.putStringSet(pref, pairNames).apply();
+
 		} else {//Если не существовало, просто загрузить что есть
 			ed.putStringSet(pref, newNames).apply();;
 		}
+
+		
 	}
 }

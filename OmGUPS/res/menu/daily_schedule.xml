@@ -1,19 +1,77 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
         android:id="@+id/ds_today"
-        android:showAsAction="ifRoom|withText"
-        android:title="Сегодня">
+        android:title="Сегодня"
+        app:showAsAction="withText|ifRoom"
+        android:orderInCategory="10">
     </item>
     <item
         android:id="@+id/ds_navigation_1"
-        android:showAsAction="ifRoom|withText"
-        android:title="Нечетная">
+        android:title="Нечетная"
+        app:showAsAction="withText|ifRoom">
+        <menu>
+            <group android:checkableBehavior="none" >
+                <item
+                    android:id="@+id/mon1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Понедельник"/>
+                <item
+                    android:id="@+id/tue1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Вторник"/>
+                <item
+                    android:id="@+id/wed1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Среда"/>
+                <item
+                    android:id="@+id/thu1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Четверг"/>
+                <item
+                    android:id="@+id/fri1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Пятница"/>
+                <item
+                    android:id="@+id/sat1"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Суббота"/>
+            </group>
+        </menu>
     </item>
     <item
         android:id="@+id/ds_navigation_2"
-        android:showAsAction="ifRoom|withText"
-        android:title="Четная">
+        android:title="Четная"
+        app:showAsAction="withText|ifRoom">
+        <menu>
+            <group android:checkableBehavior="none" >
+                <item
+                    android:id="@+id/mon2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Понедельник"/>
+                <item
+                    android:id="@+id/tue2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Вторник"/>
+                <item
+                    android:id="@+id/wed2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Среда"/>
+                <item
+                    android:id="@+id/thu2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Четверг"/>
+                <item
+                    android:id="@+id/fri2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Пятница"/>
+                <item
+                    android:id="@+id/sat2"
+                    android:showAsAction="withText|ifRoom"
+                    android:title="Суббота"/>
+            </group>
+        </menu>
     </item>
 
 </menu>

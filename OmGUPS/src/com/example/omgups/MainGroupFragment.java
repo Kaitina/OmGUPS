@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -14,10 +13,10 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -44,6 +43,7 @@ public class MainGroupFragment extends Fragment {
 	ExpandableListView list;
 	SharedPreferences sPref;
 	ExpListAdapter adapter;
+	MenuItem refreshItem;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -79,6 +79,9 @@ public class MainGroupFragment extends Fragment {
 				return false;
 			}
 		});
+		refreshItem = (MenuItem) menu.findItem(R.id.download_pb);
+		refreshItem.setActionView(R.layout.actionbar_progress);
+		refreshItem.setVisible(false);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -86,7 +89,8 @@ public class MainGroupFragment extends Fragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.save:
-			onDestroy(); break;
+			save();
+			break;
 		case R.id.help:
 			//бытьподсказке
 			break;
@@ -197,6 +201,9 @@ public class MainGroupFragment extends Fragment {
 				listId.add(adapter.groups().get(i).getId());
 				ids[j] = adapter.groups().get(i).getId();
 			}
+			if (!sPref.getStringSet("list", new HashSet<String>()).equals(list)) {
+				ed.putString("DATE", "20000101000000"); //Костыль: при несовпадении списка групп считать, что внесена новая группа. Для получения расписания сбросить дату
+			}
 			ed.remove("list"); //Удалить информацию о старых группах
 			ed.putStringSet("list", list).apply();; //Занести список всех активных групп в xml
 			ed.remove("listId");
@@ -204,18 +211,34 @@ public class MainGroupFragment extends Fragment {
 			AsyncTask<String, Void, Integer> gsht;
 			gsht = new GetScheduleTask(getActivity());
 			if (SideBar.isNetworkConnected(getActivity())) {
+				refreshItem.setActionView(R.layout.actionbar_progress);
+				refreshItem.setVisible(true);
 				gsht.execute(ids); //Выполняем запрос на получение нужных расписаний
+				try {
+					if (gsht.get() == -1) {
+						refreshItem.setVisible(false);
+					} else {		
+						refreshItem.setActionView(R.layout.actionbar_finish); //В случае успешной загрузки показать галочку на месте progressbar, через секунду скрыть
+						new CountDownTimer(500, 500) {
+							public void onTick(long millisUntilFinished) {}
+							public void onFinish() { 
+								refreshItem.setVisible(false);
+							}
+						}.start();
+					}
+				} catch (Exception e) {	} 
 			}
 			else {
 				Toast.makeText(getActivity(), "Не удалось получить списки" + '\n'
 						+ "Проверье соединение с интернетом", Toast.LENGTH_LONG).show();
-			}			
+			}
+
+
 		}
 	}
 
 	@Override
 	public void onDestroy() {
-		save();
 		super.onDestroy();
 	}
 

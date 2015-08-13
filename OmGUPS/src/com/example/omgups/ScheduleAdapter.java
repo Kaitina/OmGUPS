@@ -254,7 +254,7 @@ public class ScheduleAdapter extends BaseAdapter {
 			break;
 
 			case (2): //по преподавателю
-				index = namesArray.indexOf(list.get(position).getTeacher());
+				index = namesArray.indexOf(list.get(position).getTeacher())%24;
 			if (index >= 0) { //костыль, бывает выдает -1
 				darkColor = dark[index];
 				lightColor = light[index];

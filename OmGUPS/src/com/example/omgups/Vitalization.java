@@ -1,15 +1,17 @@
 package com.example.omgups;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
-public class Vitalization extends Activity{
+public class Vitalization extends ActionBarActivity {
 	/** 
 	 * Активность для работы с настройками визуализации
 	 * Открывается в вертикальной ориентации
