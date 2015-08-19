@@ -140,136 +140,90 @@ public class Parsers {
 		}
 	}
 
-	public static class PAIR { //Классы для парсинга: пара
+		public static class MODIFICATOR {
+			public final String DATE;
+			public final ArrayList<PAIR> MOD;
 
-		public final int PAIR_NUMBER;
-		public final String DISCIPLINE;
-		public final String DISCIPLINE_TYPE;	
-		public final String NAME;
-		public final String CLASSROOM;
-		public final String SUBGROUP;
-
-		public PAIR(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, String SUBGROUP) {
-			this.PAIR_NUMBER = PAIR_NUMBER;
-			this.DISCIPLINE = DISCIPLINE;
-			this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
-			this.NAME = NAME;
-			this.CLASSROOM = CLASSROOM;
-			this.SUBGROUP = SUBGROUP;
-		}
-
-		public static PAIR fromJson(final JSONObject object, boolean isGroup) {
-			String NAME = ""; //Хранится информация о том, с кем проходит занятие
-			if (isGroup) { //Если истина, пришла группа
-				NAME = object.optString("TEACHER_NAME", "");
-			} else  { 
-				NAME = object.optString("GROUP_NAME", "");
+			public MODIFICATOR(String DATE, JSONArray MODS, boolean isGroup) {
+				this.DATE = DATE;
+				this.MOD = PAIR.fromJson(MODS, isGroup);			
 			}
-			final int PAIR_NUMBER= object.optInt("PAIR_NUMBER", 0);			
-			final String DISCIPLINE = object.optString("DISCIPLINE", "");
-			final String DISCIPLINE_TYPE = object.optString("DISCIPLINE_TYPE", "");
-			final String CLASSROOM = object.optString("CLASSROOM", "");
-			final String SUBGROUP = object.optString("SUBGROUP_NUMBER", "");
-			return new PAIR(PAIR_NUMBER,DISCIPLINE,DISCIPLINE_TYPE,NAME,CLASSROOM,SUBGROUP);
-		}
 
-		public static ArrayList<PAIR> fromJson(final JSONArray array, boolean isGroup) {
-			final ArrayList<PAIR> PAIR = new ArrayList<PAIR>();
-			for (int index = 0; index < array.length(); ++index) {
+			public static MODIFICATOR fromJson(final JSONObject object, boolean isGroup) {
+				String date = object.optString("DATE", "");
+				final String DATE = date.substring(8, 10) + "." + date.substring(5, 7) + "." + date.substring(0, 4);
+				JSONArray MODS = null;
 				try {
-					final PAIR pair = fromJson(array.getJSONObject(index), isGroup);
-					if (null != pair) PAIR.add(pair);
-				} catch (final JSONException ignored) {
+					MODS = object.getJSONArray("DAILY_SCHEDULE");
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
+				return new MODIFICATOR(DATE,MODS,isGroup);
+			}			
+
+			public static ArrayList<MODIFICATOR> fromJson(final JSONArray array, boolean isGroup) {
+				final ArrayList<MODIFICATOR> MODIFICATOR = new ArrayList<MODIFICATOR>();
+				for (int index = 0; index < array.length(); ++index) {
+					try {
+						final MODIFICATOR mod = fromJson(array.getJSONObject(index), isGroup);
+						if (null != mod) MODIFICATOR.add(mod);
+					} catch (final JSONException ignored) {
+					}
+				}
+				return MODIFICATOR;
 			}
-			return PAIR;
+
+
+		}
+
+
+
+		public static class PAIR { //Классы для парсинга: пара, модификации
+
+			public final int PAIR_NUMBER;
+			public final String DISCIPLINE;
+			public final String DISCIPLINE_TYPE;	
+			public final String NAME;
+			public final String CLASSROOM;
+			public final String SUBGROUP;
+			public final boolean IS_CANCELED;
+
+			public PAIR(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, String SUBGROUP, boolean IS_CANCELED) {
+				this.PAIR_NUMBER = PAIR_NUMBER;
+				this.DISCIPLINE = DISCIPLINE;
+				this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
+				this.NAME = NAME;
+				this.CLASSROOM = CLASSROOM;
+				this.SUBGROUP = SUBGROUP;
+				this.IS_CANCELED = IS_CANCELED;
+			}
+			
+			public static PAIR fromJson(final JSONObject object, boolean isGroup) throws ParseException {
+				String NAME = ""; //Хранится информация о том, с кем проходит занятие
+				if (isGroup) { //Если истина, пришла группа
+					NAME = object.optString("TEACHER_NAME", "");
+				} else  { 
+					NAME = object.optString("GROUP_NAME", "");
+				}
+				final int PAIR_NUMBER= object.optInt("PAIR_NUMBER", 0);			
+				final String DISCIPLINE = object.optString("DISCIPLINE", "");
+				final String DISCIPLINE_TYPE = object.optString("DISCIPLINE_TYPE", "");
+				final String CLASSROOM = object.optString("CLASSROOM", "");
+				final String SUBGROUP = object.optString("SUBGROUP_NUMBER", "");
+				final boolean IS_CANCELED = object.optBoolean("IS_CANCELED", false);
+				return new PAIR(PAIR_NUMBER,DISCIPLINE,DISCIPLINE_TYPE,NAME,CLASSROOM,SUBGROUP,IS_CANCELED);
+			}
+
+			public static ArrayList<PAIR> fromJson(final JSONArray array, boolean isGroup) {
+				final ArrayList<PAIR> PAIR = new ArrayList<PAIR>();
+				for (int index = 0; index < array.length(); ++index) {
+					try {
+						final PAIR pair = fromJson(array.getJSONObject(index), isGroup);
+						if (null != pair) PAIR.add(pair);
+					} catch (final JSONException | ParseException ignored) {
+					}
+				}
+				return PAIR;
+			}
 		}
 	}
-
-	public static class PAIRMOD { //Классы для парсинга: пара
-
-		public final int PAIR_NUMBER;
-		public final String DISCIPLINE;
-		public final String DISCIPLINE_TYPE;	
-		public final String NAME;
-		public final String CLASSROOM;
-		public final String SUBGROUP;
-		public final Date begin;
-		public final Date end;
-		static SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-
-		public PAIRMOD(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, Date begin) {
-			this.PAIR_NUMBER = PAIR_NUMBER;
-			this.DISCIPLINE = DISCIPLINE;
-			this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
-			this.NAME = NAME;
-			this.CLASSROOM = CLASSROOM;
-			this.SUBGROUP = "";
-			this.begin = begin;
-			this.end = new Date((new Date()).getTime() + (60*60*24*1000*300)); 
-		}
-
-		public PAIRMOD(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, String SUBGROUP, Date begin) {
-			this.PAIR_NUMBER = PAIR_NUMBER;
-			this.DISCIPLINE = DISCIPLINE;
-			this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
-			this.NAME = NAME;
-			this.CLASSROOM = CLASSROOM;
-			this.SUBGROUP = SUBGROUP;
-			this.begin = begin;
-			this.end = new Date((new Date()).getTime() + (60*60*24*1000*300));;
-		}
-
-		public PAIRMOD(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, Date begin, Date end) {
-			this.PAIR_NUMBER = PAIR_NUMBER;
-			this.DISCIPLINE = DISCIPLINE;
-			this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
-			this.NAME = NAME;
-			this.CLASSROOM = CLASSROOM;
-			this.SUBGROUP = "";
-			this.begin = begin;
-			this.end = end;
-		}
-
-		public PAIRMOD(int PAIR_NUMBER, String DISCIPLINE, String DISCIPLINE_TYPE, String NAME, String CLASSROOM, String SUBGROUP, Date begin, Date end) {
-			this.PAIR_NUMBER = PAIR_NUMBER;
-			this.DISCIPLINE = DISCIPLINE;
-			this.DISCIPLINE_TYPE = DISCIPLINE_TYPE;
-			this.NAME = NAME;
-			this.CLASSROOM = CLASSROOM;
-			this.SUBGROUP = SUBGROUP;
-			this.begin = begin;
-			this.end = end;
-		}
-
-		public static PAIRMOD fromJson(final JSONObject object) throws ParseException {
-			String NAME = ""; //Хранится информация о том, с кем проходит занятие
-			if (object.has("TEACHER_NAME")) { //Если есть информация о имени преподавателя, записывать ее. это расписание группы
-				NAME = object.optString("TEACHER_NAME", "");
-			}
-			else if (object.has("GROUP_NAME")) { //Если есть информация о имени группы, записывать ее. это расписание преподавателя
-				NAME = object.optString("GROUP_NAME", "");
-			}
-			final int PAIR_NUMBER= object.optInt("PAIR_NUMBER", 0);			
-			final String DISCIPLINE = object.optString("DISCIPLINE", "");
-			final String DISCIPLINE_TYPE = object.optString("DISCIPLINE_TYPE", "");
-			final String CLASSROOM = object.optString("CLASSROOM", "");
-			final String SUBGROUP = object.optString("SUBGROUP_NUMBER", "");
-			final Date begin = (Date)formatter.parse(object.optString("BEGIN_DT", "01.01.3000"));
-			final Date end = (Date)formatter.parse(object.optString("END_DT", "01.01.3000"));
-			return new PAIRMOD(PAIR_NUMBER,DISCIPLINE,DISCIPLINE_TYPE,NAME,CLASSROOM,SUBGROUP,begin,end);
-		}
-
-		public static ArrayList<PAIRMOD> fromJson(final JSONArray array) {
-			final ArrayList<PAIRMOD> PAIRMOD = new ArrayList<PAIRMOD>();
-			for (int index = 0; index < array.length(); ++index) {
-				try {
-					final PAIRMOD pair = fromJson(array.getJSONObject(index));
-					if (null != pair) PAIRMOD.add(pair);
-				} catch (final JSONException | ParseException ignored) {
-				}
-			}
-			return PAIRMOD;
-		}
-	}
-}

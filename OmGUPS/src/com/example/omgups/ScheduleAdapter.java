@@ -6,7 +6,6 @@ import java.util.Set;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,27 +20,14 @@ public class ScheduleAdapter extends BaseAdapter {
 	ArrayList<ShModel> list;
 	byte paint = 10;
 	ArrayList<String> namesArray;
-//	Boolean isCalendar;
-//	Boolean isDetail = false;
+
 
 	ScheduleAdapter(Context context, ArrayList<ShModel> list) {
 		this.context = context;
 		this.list = list;
-//		this.isCalendar = isCalendar;
 		Set<String> name = null;
 
-
-
-//		if (isCalendar) { //определение метода заполнения календаря
-//			if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && //Если по текущей ориентации в настройках установлено расширенное расписание
-//					context.getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE).getBoolean("full_horisontal", false) == true
-//					|| context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT &&
-//					context.getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE).getBoolean("full_vertical", false) == true) {
-//				isDetail = true;
-//			}
-//		}
 		switch (
-//		(isCalendar ? context.getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE).getString("calendar", "") : 
 			context.getSharedPreferences("omgupsSettings", Context.MODE_PRIVATE).getString("daily", "")) { //определение метода раскрашивания
 			case "RadioButton01": //по предмету
 				paint = 0;
@@ -131,62 +117,6 @@ public class ScheduleAdapter extends BaseAdapter {
 		// Очищает сущетсвующий шаблон, если параметр задан
 		// Работает только если базовый шаблон для всех классов один и тот же
 		View rowView = convertView;
-//		if (isCalendar) { //Оформление сетки календаря
-//			if (isDetail) { //Оформление подробного расписания
-//
-//			} else { //краткое расписания: вместо данных окрашенные квадраты
-//				if (rowView == null) {
-//					LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//					rowView = inflater.inflate(R.layout.schedule_line, null, true);
-//					holder = new ViewHolder();
-//					holder.snum = (TextView) rowView.findViewById(R.id.Snum);					
-//					holder.pair1 = (FrameLayout) rowView.findViewById(R.id.pair1);
-//					holder.pair2 = (FrameLayout) rowView.findViewById(R.id.pair2);
-//					holder.pair3 = (FrameLayout) rowView.findViewById(R.id.pair3);
-//					holder.pair4 = (FrameLayout) rowView.findViewById(R.id.pair4);
-//					holder.pair5 = (FrameLayout) rowView.findViewById(R.id.pair5);
-//					rowView.setTag(holder);
-//				} else {
-//					holder = (ViewHolder) rowView.getTag();
-//				}
-//				holder.n.setText(list.get(position).getDate());
-//				int color;
-//				for (int i = 0; i < list.size(); i++) {
-//					if (list.get(i))
-//				switch (paint) {
-//				case (0): //по предмету
-//					index = namesArray.indexOf(list.get(position).getName().replaceFirst(", подгруппа [0-9]", ""))%24;
-//				color = light[index];
-//				break;
-//				case (1): //по типу предмета
-//					switch (list.get(position).getTipe()) { //определение типа
-//					case "Лекция":
-//						color = light[0];
-//						break;
-//					case "Практика":
-//						color = light[1];
-//						break;
-//					case "Лабораторная":
-//						color = light[2];
-//						break;
-//					default:
-//						color = light[3];
-//						break;				
-//					}
-//				break;
-//				case (2): //по преподавателю
-//					index = namesArray.indexOf(list.get(position).getTeacher());
-//				if (index >= 0) { //костыль, бывает выдает -1
-//					color = light[index];
-//				}
-//				break;
-//				default:
-//					color = light[11];
-//					break;
-//				}
-//				}
-//			}
-//		} else {
 			if (rowView == null) {
 				LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				rowView = inflater.inflate(R.layout.schedule_line, null, true);
@@ -271,10 +201,6 @@ public class ScheduleAdapter extends BaseAdapter {
 				holder.n.setBackgroundColor(darkColor);
 				holder.pairContainer.setBackgroundColor(lightColor);
 			}
-//		}
 		return rowView;
 	}
-
-
-
 }

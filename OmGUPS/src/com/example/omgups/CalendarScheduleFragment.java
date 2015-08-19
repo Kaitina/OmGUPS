@@ -12,10 +12,6 @@ import java.util.concurrent.TimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.omgups.Parsers.PAIR;
-
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -33,7 +29,6 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -41,6 +36,8 @@ import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.omgups.Parsers.PAIR;
 
 public class CalendarScheduleFragment extends Fragment implements OnClickListener {
 
@@ -176,7 +173,6 @@ public class CalendarScheduleFragment extends Fragment implements OnClickListene
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.calendar_schedule, menu);
 

@@ -19,7 +19,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 /**
  * Класс для получения листа расписаний
@@ -105,91 +104,6 @@ public class GetScheduleTask extends AsyncTask<String, Void, Integer> {
 
 			return count;
 		}
-		
-		
-		
-//		sPref = context.getSharedPreferences("groups", Context.MODE_PRIVATE);
-//		Editor ed = sPref.edit();
-//		String dateStr = new String(sPref.getString("DATE", ""));
-//		//			String dateStr = "";
-//		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-//		//			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-//		Date date = null;
-//		try {
-//			date = (Date)formatter.parse(dateStr); //хранящаяся дата
-//		} catch (ParseException e1) {
-//			e1.printStackTrace();
-//			dateStr = "20000101000000";
-//			try {
-//				date = (Date)formatter.parse(dateStr);
-//			} catch (ParseException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		HttpParams httpParams = new BasicHttpParams(); //Настроить параметры подключения
-//		HttpConnectionParams.setConnectionTimeout(httpParams, TIMEOUT_MILLISEC);
-//		HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC); //Установка ожидания
-//		DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
-//
-//		//Кусок кода, формирующий, куда отправлять (какие данные просить)
-//		String parameters = new String("?");
-//		for (String p : params) { //Заполнить строку параметров всеми переданными
-//			if (p.charAt(0) == 'g') {
-//				parameters += "id_user=" + p.replace("g", "") + "&";
-//			}
-//			if (p.charAt(0) == 't') {
-//				parameters += "id_user=" + p.replace("t", "") + "&";
-//			}
-//		}
-//		String uri = context.getResources().getString(R.string.uri);
-//		String url = uri + "getSchedule" + parameters.replaceFirst("&$", ""); //Если не единица, нужно добавить параметры
-//		url += "&last_refresh_dt=" + dateStr;
-//		HttpGet httpGet = new HttpGet(url);
-//		//			httpGet.setHeader("If-Modified-Since", dateStr);
-//		HttpResponse httpResponse = null;
-//		try {
-//			httpResponse = httpClient.execute(httpGet); //Получить данные
-//			String lastModified = httpResponse.getFirstHeader("Last-modified").toString().replaceFirst("Last-Modified: ", ""); //Считать время последнего изменения
-//			try {
-//				lastModifiedDate = (Date)formatter.parse(lastModified);
-//			} catch (ParseException e) {} //Дата с сервера
-//			if (!dateStr.equals("")) {
-//				if (lastModifiedDate.getTime() == (date.getTime())) {
-//					//Если даты совпадают, изменений не требуется
-//					return 0;
-//				}
-//			}
-//			ed.putString("DATE",lastModified).apply(); //Если не совпадают, занести новую дату
-//			HttpEntity httpEntity = httpResponse.getEntity(); //Считать данные
-//			is = httpEntity.getContent();
-//			BufferedReader reader = null;
-//			reader = new BufferedReader(new InputStreamReader(is, "CP-1251"), 8);
-//			StringBuilder sb = new StringBuilder();
-//			String line = null;
-//			while ((line = reader.readLine()) != null) {
-//				sb.append(line + "\n");
-//			}
-//			is.close();
-//			takenJson = sb.toString(); //Положить данные в удобоваримый вид
-//			if (takenJson.isEmpty()) { //Если после всех операций все равно пустой	
-//				return -1;
-//			}
-//		} catch (ClientProtocolException e) {
-//			e.printStackTrace();
-//			return -1;
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return -1;
-//		}
-//
-//		try {
-//			globalParse();
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//			return -1;
-//		}
-//		return count;
-//	}
 
 	@Override
 	protected void onPostExecute(Integer data) { //Предупреждение, если список пустой

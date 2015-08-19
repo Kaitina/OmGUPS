@@ -47,7 +47,7 @@ public class MainGroupFragment extends Fragment {
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		//		setRetainInstance(true);
+		setRetainInstance(true);
 		setHasOptionsMenu(true);
 		View view = inflater.inflate(R.layout.main_group, container, false);
 		list = (ExpandableListView)view.findViewById(R.id.list);
@@ -120,7 +120,7 @@ public class MainGroupFragment extends Fragment {
 			e.printStackTrace();
 		}
 		//Создаем лист с группами
-		ArrayList<ArrayList<Model>> models = new ArrayList<ArrayList<Model>>();  													//!!!
+		ArrayList<ArrayList<Model>> models = new ArrayList<ArrayList<Model>>();
 		String faculcyName = "";
 		String departmentName = "";
 		JSONArray arr;
@@ -131,21 +131,21 @@ public class MainGroupFragment extends Fragment {
 			int j = 0;
 
 			for (int i = 0; i < faculcySize; i++) { //для каждого факультета
-				ArrayList<Model> list = new ArrayList<Model>(); 																		//!!!
+				ArrayList<Model> list = new ArrayList<Model>();
 				for (; j<groupsize; j++) { //По списку групп, записывать в группу
 					if (j == 0) { //в первый раз по циклу, записать первого в списке
 						faculcyName = GROUP.get(j).FACULTY_NAME;
 					}
 					if (faculcyName.equals(GROUP.get(j).FACULTY_NAME)) {//Если название факультета совпадает с предыдущим
-						list.add(get(GROUP.get(j).GROUP_NAME, "g"+Integer.toString(GROUP.get(j).ID_GROUP)));							//!!!
+						list.add(get(GROUP.get(j).GROUP_NAME, "g"+Integer.toString(GROUP.get(j).ID_GROUP)));
 					}					
 					else { //Если не совпадает, пора переходить на следующий факультет
 						faculcyName = GROUP.get(j).FACULTY_NAME; //Определить название следующего факультета
-						models.add(list); 																						//!!!
+						models.add(list);
 						break; //Выходим из внутреннего цикла
 					}
 					if (i == faculcySize-1 && j==groupsize-1) {//На последнем элементе. занести последнюю группу в список
-						models.add(list); 																						//!!!
+						models.add(list);
 					}
 				}
 			}
@@ -160,15 +160,15 @@ public class MainGroupFragment extends Fragment {
 						departmentName = TEACHER.get(j).DEPARTMENT_NAME;
 					}
 					if (departmentName.equals(TEACHER.get(j).DEPARTMENT_NAME)) {//Если название факультета совпадает с предыдущим
-						list.add(get(TEACHER.get(j).TEACHER_NAME, "g"+Integer.toString(TEACHER.get(j).ID_TEACHER)));							//!!!
+						list.add(get(TEACHER.get(j).TEACHER_NAME, "g"+Integer.toString(TEACHER.get(j).ID_TEACHER)));
 					}					
 					else { //Если не совпадает, пора переходить на следующий факультет
 						departmentName = TEACHER.get(j).DEPARTMENT_NAME; //Определить название следующего факультета
-						models.add(list); 																						//!!!
+						models.add(list);
 						break; //Выходим из внутреннего цикла
 					}
 					if (i == departmentSize-1 && j==groupsize-1) {//На последнем элементе. занести последнюю группу в список
-						models.add(list); 																						//!!!
+						models.add(list);
 					}
 				}
 			}
@@ -232,8 +232,6 @@ public class MainGroupFragment extends Fragment {
 				Toast.makeText(getActivity(), "Не удалось получить списки" + '\n'
 						+ "Проверье соединение с интернетом", Toast.LENGTH_LONG).show();
 			}
-
-
 		}
 	}
 

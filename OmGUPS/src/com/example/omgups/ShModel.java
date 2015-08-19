@@ -9,9 +9,10 @@ public class ShModel {
 	private String auditory;
 	private String tipe;
 	private String date;
+	private boolean isCancelled;
 
 
-	public ShModel(String n, String time, String name, String teacher, String auditory, String tipe, String date) {
+	public ShModel(String n, String time, String name, String teacher, String auditory, String tipe, String date, boolean isCancelled) {
 		this.n = n;
 		this.time = time;
 		this.name = name;
@@ -20,6 +21,7 @@ public class ShModel {
 		this.tipe = tipe;
 		this.name = name;
 		this.date = date;
+		this.isCancelled = isCancelled;
 	}
 
 	public String getN() {
@@ -42,11 +44,18 @@ public class ShModel {
 	}
 	public String getDate() {
 		return date;
-	}
-	
+	}	
+	public boolean isCancelled() {
+		return isCancelled;
+	}	
 	public void setN(String n) {
 		this.n = n;
+	}	
+	public void setDate(String date) {
+		this.date = date;
 	}
-
+	public void setTeacher(String teacher) {
+		this.teacher = teacher;
+	}
 }
 

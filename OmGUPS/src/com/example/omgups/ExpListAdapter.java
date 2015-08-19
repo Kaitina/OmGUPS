@@ -2,8 +2,10 @@ package com.example.omgups;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -32,15 +34,8 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 	private final Object mLock = new Object();
 	private ArrayList<ArrayList<Model>> mOriginalValues;
 	private ArrayList<String> mOriginalNames;
-	//	protected static String lastGroup = "";
-	//	protected static String groupId = "";
-	//	static ArrayList<String> groups = new ArrayList<String>();	
-	//	static ArrayList<String> groupIdA = new ArrayList<String>();	
-	//	private RadioButton rb;
 	SharedPreferences sPref;
 	Editor ed;
-	//	Model old;
-	private int ii, jj;
 
 
 	public ExpListAdapter (Context context, ArrayList<String> names, 
@@ -59,11 +54,8 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 				}
 				if (mGroup.get(i).get(j).getId().equals(oldMain)) {
 					mGroup.get(i).get(j).setSelected(true);
-					ii = i; jj = j;
 				}
 			}
-
-		//		old = null;
 	}
 
 	@Override
@@ -161,18 +153,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 				Model element = (Model) holder.radioButton.getTag();
 				element.setSelected(buttonView.isChecked());
 				element.setMarked(buttonView.isChecked());
-				//				if (old != null) {
-				//					old.setSelected(false);
-				//					rb.setChecked(false);
-				//				}
-				//				else {
-				//					mGroup.get(ii).get(jj).setSelected(false);
-				//					mGroup.get(ii).get(jj).setMarked(true);
-				//					rb.setChecked(false);
-				//				}
-				//				old = element;
-				//				rb = holder.radioButton;
-
 				notifyDataSetChanged();
 			}
 
@@ -180,7 +160,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 		view.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				//				rb = lastrb;
 				if (!mGroup.get(groupPosition).get(childPosition).isSelected()) {
 					if (!mGroup.get(groupPosition).get(childPosition).isMarked()) {
 						view.setBackgroundColor(mContext.getResources().getColor(R.color.schedule_light));
@@ -195,11 +174,6 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 		});
 		view.setTag(holder);
 		holder.radioButton.setTag(mGroup.get(groupPosition).get(childPosition));
-		//				} else {
-		//					view = convertView;
-		//					((ViewHolder) view.getTag()).radioButton.setTag(mGroup.get(groupPosition).get(childPosition));
-		//				}
-
 		ViewHolder hholder = (ViewHolder) view.getTag();
 		hholder.textView.setText(mGroup.get(groupPosition).get(childPosition).getName());
 		hholder.radioButton.setChecked(mGroup.get(groupPosition).get(childPosition).isSelected());
@@ -243,6 +217,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 	private class ArrayFilter extends Filter {
 		FilterResults resultsNames = new FilterResults();
 
+		@SuppressLint("DefaultLocale")
 		@Override
 		protected FilterResults performFiltering(CharSequence prefix) {
 			FilterResults results = new FilterResults();
@@ -282,7 +257,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 					final ArrayList<Model> newValuesChild = new ArrayList<Model>();
 					for (int j = 0; j < count; j++) {
 						final Model value = values.get(i).get(j);
-						final String valueText = value.getName().toString().replaceAll(" ", "").toLowerCase();
+						final String valueText = value.getName().toString().replaceAll(" ", "").toLowerCase(Locale.getDefault());
 
 						// First match against the whole, non-splitted value
 						if (valueText.startsWith(prefixString)) {
@@ -317,6 +292,7 @@ public class ExpListAdapter extends BaseExpandableListAdapter implements Filtera
 			return results;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		protected void publishResults(CharSequence constraint, FilterResults results) {
 			//noinspection unchecked

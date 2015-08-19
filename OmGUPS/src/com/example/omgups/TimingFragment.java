@@ -10,10 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TimePicker;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class TimingFragment extends Fragment{
 	/** 
@@ -24,7 +24,6 @@ public class TimingFragment extends Fragment{
 	TimePicker tp;
 	ListView clickBox;
 	SharedPreferences sPref;
-	private static final String LOG_TAG  = "myLogs";
 	Context context;
 
 
@@ -71,8 +70,6 @@ public class TimingFragment extends Fragment{
 		});
 		return view;
 	}
-
-
 
 	@Override
 	public void onResume() {  //ѕри начале\восстановлении работы выделить сохраненные характеристики

@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.util.Log;
 
 public class UpdateService extends Service {
 	/** 
@@ -83,9 +82,9 @@ public class UpdateService extends Service {
 		case "monthly":
 			Calendar c = Calendar.getInstance();
 			int dayInMonth = 0;
-			int month = c.getTime().getMonth();
+			int month = c.get(Calendar.MONTH);
 			if (month == 30) {
-				if (c.getTime().getYear() % 4 == 0) {
+				if (c.get(Calendar.YEAR) % 4 == 0) {
 					dayInMonth = 29;
 				}
 				else dayInMonth = 28;
@@ -107,7 +106,7 @@ public class UpdateService extends Service {
 			calendar.set(Calendar.DAY_OF_MONTH, 25);
 			Calendar cal = Calendar.getInstance();
 			int days = 365;
-			if (cal.getTime().getYear() % 4 == 0) {
+			if (cal.get(Calendar.YEAR) % 4 == 0) {
 				days = 366;
 			}
 			alarmTime = calendar.getTimeInMillis();
@@ -116,7 +115,6 @@ public class UpdateService extends Service {
 			INTERVAL = AlarmManager.INTERVAL_DAY*days;
 			break;
 		default:
-			Log.d("11", "ó3");
 			need = false;
 			break;
 		}
