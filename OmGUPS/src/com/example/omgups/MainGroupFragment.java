@@ -3,6 +3,7 @@ package com.example.omgups;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.LayoutInflater;
@@ -31,7 +33,7 @@ import com.example.omgups.Parsers.FACULTIES;
 import com.example.omgups.Parsers.GROUPS;
 import com.example.omgups.Parsers.TEACHERS;
 
-public class MainGroupFragment extends Fragment {
+public class MainGroupFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
 	/** 
 	 * Класс для выбора основной группы в горизонтальной ориентации
 	 * создает 2 вложенных листа, можно выбрать либо препода, либо группу
@@ -44,7 +46,8 @@ public class MainGroupFragment extends Fragment {
 	SharedPreferences sPref;
 	ExpListAdapter adapter;
 	MenuItem refreshItem;
-
+	private SwipeRefreshLayout mSwipeRefreshLayout;
+	
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		setRetainInstance(true);
@@ -53,12 +56,31 @@ public class MainGroupFragment extends Fragment {
 		list = (ExpandableListView)view.findViewById(R.id.list);
 
 		sPref = getActivity().getSharedPreferences("item_list", Context.MODE_PRIVATE);
+		mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 		parse();
 
 		return view;
 	}
 
-
+	@Override
+	public void onRefresh() {
+		mSwipeRefreshLayout.setRefreshing(true);
+		GetListTask glt = new GetListTask(getActivity());
+		glt.execute(); //Выполняем запрос на получение нужных расписаний
+		// прячем прогресс
+		boolean result = false;
+		try {
+			result = glt.get();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+		mSwipeRefreshLayout.setRefreshing(false);
+		if (result) {
+			//заново заполнить списки
+			parse();
+		}
+	}
 
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.groups, menu);

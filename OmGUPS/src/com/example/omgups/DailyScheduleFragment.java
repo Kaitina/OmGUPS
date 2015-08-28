@@ -162,10 +162,8 @@ implements OnClickListener, OnScrollListener, SwipeRefreshLayout.OnRefreshListen
 		}
 		mSwipeRefreshLayout.setRefreshing(false);
 		if (result > 0) {
-			// перерисовать окно активной группы
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			lw.setVisibility(View.INVISIBLE); //Старый фрагмент рисуется поверх нового. скрыть старый фрагмент
-			ft.replace(R.id.container, new DailyScheduleFragment()).commit();
+			lmt = new LoadMoreTask();
+			lmt.execute(14);
 		}
 	}
 

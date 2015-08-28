@@ -3,10 +3,12 @@ package com.example.omgups;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -14,11 +16,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
@@ -28,7 +32,7 @@ import com.example.omgups.Parsers.GROUPS;
 import com.example.omgups.Parsers.TEACHERS;
 
 @SuppressWarnings("deprecation")
-public class MainGroup extends ActionBarActivity  {
+public class MainGroup extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener {
 	/** 
 	 * Класс для выбора основной группы в вертикальной ориентации
 	 * создает 2 вложенных листа, можно выбрать либо препода, либо группу
@@ -41,6 +45,7 @@ public class MainGroup extends ActionBarActivity  {
 	ExpListAdapter adapter;
 	SharedPreferences sPref;
 	MenuItem refreshItem;
+	private SwipeRefreshLayout mSwipeRefreshLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +54,34 @@ public class MainGroup extends ActionBarActivity  {
 
 		list = (ExpandableListView)findViewById(R.id.list);
 		sPref = getSharedPreferences("item_list", Context.MODE_PRIVATE);
+		mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 		parse();
 
 	}
+	
+	@Override
+    public void onRefresh() {
+		mSwipeRefreshLayout.setRefreshing(true);
+		GetListTask glt = new GetListTask(getApplicationContext());
+		glt.execute(); //Выполняем запрос на получение нужных расписаний
+		// прячем прогресс
+		boolean result = false;
+		try {
+			result = glt.get();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+		mSwipeRefreshLayout.setRefreshing(false);
+		if (result) {
+			// перерисовать окно активной группы
+//			FragmentTransaction ft = getFragmentManager().beginTransaction();
+//			lw.setVisibility(View.INVISIBLE); //Старый фрагмент рисуется поверх нового. скрыть старый фрагмент
+//			ft.replace(R.id.container, new DailyScheduleFragment()).commit();
+		//заново заполнить списки
+		parse();
+		}
+    }
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
